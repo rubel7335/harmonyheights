@@ -1,0 +1,330 @@
+/* 
+    Created on : Apr 5, 2017, 12:04:52 PM
+    Author     : Md. Rubel, Assistant Programmer,ISDD, Bangladesh Bank
+*/
+
+#holder {
+        border: 1px solid #D0D0D0;
+        box-shadow: 0 0 8px #D0D0D0;
+}
+#bodyholder{
+        border: 1px solid #D0D0D0;
+        box-shadow: 0 0 8px #D0D0D0;
+        
+}
+
+#footer{
+        border: 1px solid #D0D0D0;
+        box-shadow: 0 0 8px #D0D0D0;
+background: rgb(236,242,246); /* Old browsers */
+background: -moz-linear-gradient(top, rgba(236,242,246,1) 0%, rgba(137,199,235,1) 0%, rgba(172,214,238,1) 50%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top, rgba(236,242,246,1) 0%,rgba(137,199,235,1) 0%,rgba(172,214,238,1) 50%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom, rgba(236,242,246,1) 0%,rgba(137,199,235,1) 0%,rgba(172,214,238,1) 50%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ecf2f6', endColorstr='#acd6ee',GradientType=0 ); /* IE6-9 */    
+}
+body {
+        background-color: #fff;
+        margin: 40px;
+        font: 13px/20px normal Helvetica, Arial, sans-serif;
+        color: #4F5155;
+}
+#appTitle{
+        color: #ECFFB3;
+        text-align: right;
+        border: 0;
+        border-radius: 0;
+        margin-bottom: 0;
+        font-size: 20px;
+        letter-spacing: 3px;
+        padding-top: 20px;
+}
+#appLogo{
+        padding: 2px;
+        text-align: center;
+        height: 80px;
+}
+#appNav{
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        border: 1px solid #D0D0D0;
+       
+        
+}
+#dataContainer{
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        border: 1px solid #D0D0D0;
+        box-shadow: 0 0 8px #D0D0D0;   
+}
+.menuItem{
+    padding: 8px;
+    margin:2px;
+    text-align: center;
+    border: 0;
+    font-weight:bold;
+    background: #f9f2f4;    
+    color:  #009999;
+    border-radius: 0;
+    margin-bottom: 0;
+    font-size: 12px;
+    letter-spacing: 3px;
+}
+form {
+    border: 3px solid #f1f1f1;
+}
+
+input[type=text],input[type=password] {
+    width: 100%;
+    padding: 6px 10px;
+    margin: 4px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+
+
+
+.cancelbtn {
+    width: auto;
+    padding: 10px 18px;
+    background-color: #f44336;
+}
+.registerbtn {
+    width: auto;
+    padding: 10px 18px;
+}
+
+.imgcontainer {
+    text-align: center;
+    height: 100px;
+    width: 100px;
+    margin: 24px 0 12px 0;
+}
+#refreshcontainer{
+   text-align: center;
+    height: 40px;
+    width: 40px; 
+    padding: 2px;
+}
+
+img.avatar {
+    width: 40%;
+    border-radius: 20%;
+}
+
+.container {
+    padding: 16px;
+}
+
+span.psw {
+    float: right;
+    padding-top: 16px;
+}
+.rowstyle{
+  background:#d3f3d3;
+  margin-bottom: 1px;
+}
+.rowlabel{
+    font-weight: bold;
+    text-align: left;
+    padding: 2px;
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+    span.psw {
+       display: block;
+       float: none;
+    }
+    .cancelbtn {
+       width: 100%;
+    }
+}
+.navbar-nav > li > a {padding-top:5px !important; padding-bottom:5px !important;}
+.navbar {min-height:32px !important;}
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+div.container{
+    width: 80%;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #dataContainer, #dataContainer * {
+    visibility: visible;
+  }
+  #dataContainer {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
+
+ul.final li { list-style-type:none; float:left;}
+ul.final li a { text-decoration:none; position:relative;}
+ul.final li a:before { border-left:2px solid  #009999; border-right:2px solid #009999; transform:scale(1,0);}
+ul.final li a:after { border-top:2px solid #009999; border-bottom:2px solid #009999; transform:scale(0,1);}
+ul.final li a:before, ul.final li a:after { content:""; position:absolute; top:0; right:0; bottom:0; left:0; transition:opacity 0.35s ease, transform 0.35s ease;}
+ul.final li a:hover:before, ul.final li a:hover:after { opacity:1; transform:scale(1);}
+
+#pswd_info {
+	background: #dfdfdf none repeat scroll 0 0;
+	color: #fff;
+	left: 20px;
+	position: absolute;
+}
+#pswd_info h4{
+    background: black none repeat scroll 0 0;
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0;
+    padding: 17px 0;
+    text-align: center;
+    text-transform: uppercase;
+}
+#pswd_info ul {
+    list-style: outside none none;
+}
+#pswd_info ul li {
+   padding: 10px 45px;
+}
+
+
+
+.valid {
+	background: rgba(0, 0, 0, 0) url("https://s19.postimg.org/vq43s2wib/valid.png") no-repeat scroll 2px 6px;
+	color: green;
+	line-height: 21px;
+	padding-left: 22px;
+}
+
+.invalid {
+	background: rgba(0, 0, 0, 0) url("https://s19.postimg.org/olmaj1p8z/invalid.png") no-repeat scroll 2px 6px;
+	color: red;
+	line-height: 21px;
+	padding-left: 22px;
+}
+
+
+#pswd_info::before {
+    background: #dfdfdf none repeat scroll 0 0;
+    content: "";
+    height: 25px;
+    left: -13px;
+    margin-top: -12.5px;
+    position: absolute;
+    top: 50%;
+    transform: rotate(45deg);
+    width: 25px;
+}
+#pswd_info {
+    display:none;
+}
+#app_icon_container{
+    height: 100px;
+    width: 100px;
+    margin: 24px 0 12px 0;
+}
+.inner_container{
+    padding:10px; 
+    background: #f1f1f1;
+}
+.errMsg{
+    color: #f44336;
+}
+.errorMessgae{
+    color: #f44336;
+    font-size: 12px;
+    font-weight: bold;
+}
+#headerError{
+    text-align:center; background: #f1f1f1; padding:10px;
+}
+#poa_history_container{
+    margin-top:2px;
+    background: #fff;
+    padding:2px;
+    display: none;
+}
+#plus{
+    text-align:right; 
+    padding:5px;
+    display: none;
+}
+#minus{
+    text-align: right;
+}
+table { 
+    border-spacing: 2px;
+    border-collapse: separate;
+    width: 100%;
+}
+td { 
+    padding: 3px;
+}
+.frmContainer{   
+padding:15px;
+background: #f1f1f1; 
+}
+.frmContainerBody{
+  background: #a6e1ec; 
+  padding-bottom:5px; 
+}
+#errordisplayArea{
+    color: #f44336;
+    text-align: center;
+    padding:2px; 
+}
+
+#captImg{    
+    display: block;
+    cursor: pointer;
+}
+
+.negatedMessageBox{
+    background: #F2F3FF;
+    text-align:center;
+    font-weight:bold; 
+    padding:105px;
+    margin-left:350px;
+    margin-right:350px;
+    margin-bottom:10px;
+    margin-top:50px;
+}
+.paneTitle{
+    font-weight: bold;
+    color: #009999;
+}
+
+#leftPan{
+  background-image: url('/appimages/bg5.png');  
+}
+
+.tbl{
+    width: 100%;
+    font-family: monospace;
+}
+.confirm_msg{
+    text-align:center;
+    color: #009926;
+    font-size: 14px;
+    font-weight: bolder;  
+}
+legend.scheduler-border {
+    width:inherit; /* Or auto */
+    padding:0 10px; /* To give a bit of padding on the left and right */
+    border-bottom:none;
+}
+

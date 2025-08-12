@@ -1,0 +1,1 @@
+<p>Page added successfully!</p>

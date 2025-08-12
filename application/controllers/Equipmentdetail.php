@@ -1,0 +1,547 @@
+<?php
+class Equipmentdetail extends CI_Controller {
+ 
+    public function __construct()
+    {
+        parent::__construct();
+        date_default_timezone_set("Asia/Dhaka");
+        $this->load->helper('url');
+        $this->load->helper('utility_helper');
+        $this->load->library('session');
+        $this->load->helper(array('form', 'url'));
+        $this->load->library('form_validation');
+        $this->load->model('person_model');  
+        $this->load->model('commondata_model');
+        $this->load->model('equipment_model');
+        $this->load->model('payment_model');  
+        $this->load->model('supplier_model'); 
+        $this->load->helper('url_helper');
+        $is_loggedIn = $this->session->userdata('username');
+        if(empty($is_loggedIn)){
+            redirect('login');
+        }
+    } 
+    public function index()
+    {   
+        $data['equipmentdetails']  = $this->equipmentdetail_model->get_equipmentdetails();
+        $data['title'] = 'Equipment expenditure details';         
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('equipmentdetail/index', $data);
+        $this->load->view('templates/footer');
+    }
+
+
+    
+    
+    public function get_detailexpense_id()
+    {           
+        $id = $this->uri->segment(3);        
+        $id = base64_decode($id);
+        $data['expense_id'] = $id;
+        if (empty($id))
+        {
+            show_404();
+        }   
+
+        $data['expdetails']  = $this->equipment_model->get_expensedetails_by_id($id);
+
+       
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('equipmentdetail/view', $data);        
+        $this->load->view('templates/footer');       
+        
+        
+    }   
+    
+    
+    public function updateRecord(){
+        $id = $this->input->post('id');
+      //  echo "Posted ID:".$id;
+        $result = $this->equipment_model->updateStockData($id);
+        if ($result) {
+            echo 'Record updated successfully';
+        } else {
+            echo 'Error updating record';
+        }
+        
+    }
+
+    public function create($id = NULL)
+    {
+        $error=false;
+        $encryptedID=$id;
+        $id= base64_decode($id);
+        
+       // exit;
+     
+        $this->load->helper('form');
+        $this->load->library('form_validation'); 
+        $data['title'] = 'Add details information';  
+
+        $data['eq_expenses_byid']  = $this->equipment_model->get_eq_expenses($id);     
+        $data['suppliers']  = $this->supplier_model->get_suppliers();   
+        $grand_parent_id=1;
+       
+       // var_dump($data['eq_expenses_byid'] );
+
+        $expense_subarea_id =$data['eq_expenses_byid']['expense_subarea_id'];
+        $data['expense_subarea_id'] = base64_encode($expense_subarea_id);  
+        
+        //$data['$grand_parent_id'] = $grand_parent_id; 
+        // echo $expense_subarea_id.":".$grand_parent_id.":";
+        // exit;
+
+        
+        $data['parent_id'] = $id;         
+
+        $data['expdetails']  = $this->equipment_model->get_expensedetails_by_id($id,$grand_parent_id);    
+       // var_dump($data['expdetails'] );    
+        $data['items']      = $this->equipment_model->get_all_items($expense_subarea_id,$grand_parent_id);
+
+        $data['all_items']  = $this->equipment_model->get_all_items();
+        $data['units']      = $this->equipment_model->get_all_units();
+
+
+        //var_dump($data['items']);
+        //print_r($data['employee']);        
+
+        $this->form_validation->set_rules('item', 'Item', 'required');
+        $this->form_validation->set_rules('unit_id', 'unit', 'required');  
+        $this->form_validation->set_rules('unit_price', 'unit price', 'required'); 
+        $this->form_validation->set_rules('quantity', 'quantity', 'required');        
+        $this->form_validation->set_rules('subtotal', 'subtotal', 'required');
+
+        if ($this->form_validation->run() === FALSE)
+        {            
+                $this->load->view('templates/header');
+                $this->load->view('templates/menu');
+                $this->load->view('equipmentdetail/create', $data);
+                $this->load->view('templates/footer'); 
+            }  
+        else
+        {   
+           
+          
+                $this->equipment_model->set_equipmentdetail();          
+                $this->session->set_flashdata('confirmation',"Details expense information successfully");          
+                redirect('equipmentdetail/create/'.base64_encode($id));
+            }        
+    }
+    
+    
+    
+    public function view($id = NULL)
+    {
+        $id = base64_decode($id);
+        $data['nominee_id'] = $id;
+        $data['nominee_item'] = $this->nominee_model->get_nominees($id);
+        if (empty($data['nominee_item']))
+        {
+            show_404();
+        }   
+        $data['title'] = $data['nominee_item']['fullname']; 
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('nominee/view', $data);
+        $this->load->view('templates/footer');
+    } 
+    public function edit()
+    {
+        $error=false; 
+        $id = $this->uri->segment(3);
+        $id = base64_decode($id);
+        if (empty($id))
+        {
+            show_404();
+        }
+
+      
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        
+        $data['title'] = 'Edit a family member';
+        $data['nominee_item'] = $this->nominee_model->get_nominee_by_id($id);        
+        //$data['employee_item'] = $this->employee_model->get_employee_by_id($id);  
+        $personal_id = $data['nominee_item']['personal_id'];
+        $personal_id = base64_encode($personal_id);
+       // var_dump($data['nominee_item'] );
+      
+        
+        if(isset($_POST) && !empty($_FILES['image_file']['name'])){    
+        $errors     = array();
+        $maxsize    = 102000;//in Bytes
+        $acceptable = array(
+            'image/jpeg',
+            'image/jpg',
+            'image/gif',
+            'image/png'
+        );
+
+        $name_photo = @$_FILES['image_file']['name'];
+        list($txt, $ext) = explode(".", $name_photo);
+        $image_name = time().".".$ext;
+        $tmp = @$_FILES['image_file']['tmp_name'];
+
+        if(($_FILES['image_file']['size'] >= $maxsize) || ($_FILES["image_file"]["size"] == 0)) {
+            $errors[] = 'Photo size too large. File must be less than 100 KB.';
+            $data['error_photo']= 'Photo size too large. File must be less than 100 KB';
+            $error=true;
+        }
+
+        if((!in_array($_FILES['image_file']['type'], $acceptable)) && (!empty($_FILES["image_file"]["type"]))) {
+            $errors[] = 'Invalid Photo type. Only JPG, GIF and PNG types are accepted.'; 
+            $data['error_photo']= 'Invalid Photo type. Only JPG, GIF and PNG types are accepted.';
+            $error=true;
+        }
+        if(!$error){move_uploaded_file($tmp, 'upload/nominee/'.$image_name);}
+
+
+
+
+
+    }else {  $image_name=$data['nominee_item']['image_url'];$error=false;} 
+       /* if(isset($_POST) && !empty($_FILES['poa_file']['name'])){   
+        $errors     = array();
+        $maxsize    = 512000;//in Bytes
+        $acceptable = array(
+            'application/pdf',
+            'image/jpeg',
+            'image/jpg'
+        );
+
+        $name_poa = @$_FILES['poa_file']['name'];
+        list($txt, $ext) = explode(".", $name_poa);
+        $poa_file_name = time().".".$ext;
+        $tmp_poa = @$_FILES['poa_file']['tmp_name'];
+
+        if(($_FILES['poa_file']['size'] >= $maxsize) || ($_FILES["poa_file"]["size"] == 0)) {
+            $errors[] = 'Proof of alive document size too large. File must be less than 500 KB.';
+            $data['error_poa']= 'Proof of alive document size too large. File must be less than 500 KB.';
+            $error=true;
+        }
+
+        if((!in_array($_FILES['poa_file']['type'], $acceptable)) && (!empty($_FILES["poa_file"]["type"]))) {
+            $errors[] = 'Invalid Proof of alive file type. Only PDF, JPG, JPEG types are accepted.';
+            $data['error_poa']= 'Invalid Proof of alive file type. Only PDF, JPG, JPEG types are accepted.';
+            $error=true;
+        }
+        if(!$error){move_uploaded_file($tmp_poa, 'upload/proof_of_alive/'.$poa_file_name);}
+
+    }else { $poa_file_name=$data['nominee_item']['proof_of_alive'];$error=false;}
+        if(isset($_POST) && !empty($_FILES['nmc_file']['name'])){   
+        $errors     = array();
+        $maxsize    = 512000;//in Bytes
+        $acceptable = array(
+            'application/pdf',
+            'image/jpeg',
+            'image/jpg'
+        );
+
+        $name_nmc = @$_FILES['nmc_file']['name'];
+        list($txt, $ext) = explode(".", $name_nmc);
+        $nmc_file_name = time().".".$ext;
+        $tmp_nmc = @$_FILES['nmc_file']['tmp_name'];
+
+        if(($_FILES['nmc_file']['size'] >= $maxsize) || ($_FILES["nmc_file"]["size"] == 0)) {
+            $errors[] = 'Non marriage certificate size too large. File must be less than 500 KB.';
+            $data['error_nmc']= 'Non marriage certificate size too large. File must be less than 500 KB.';
+            $error=true;
+        }
+
+        if((!in_array($_FILES['nmc_file']['type'], $acceptable)) && (!empty($_FILES["nmc_file"]["type"]))) {
+            $errors[] = 'Invalid Non marriage certificate file type. Only PDF, JPG, JPEG types are accepted.';
+            $data['error_nmc']= 'Invalid Non marriage certificate file type. Only PDF, JPG,JPEG types are accepted.';
+            $error=true;
+        }
+        if(!$error){move_uploaded_file($tmp_nmc, 'upload/non_marriage_certificate/'.$nmc_file_name);}
+    }else { $nmc_file_name=$data['nominee_item']['non_marriage_cert'];$error=false;} */  
+        
+        
+        $this->form_validation->set_rules('personal_id', 'Personal id', 'required');
+        $this->form_validation->set_rules('fullname', 'Full Name', 'required');  
+        $this->form_validation->set_rules('relation', 'Relation', 'required');        
+        $this->form_validation->set_rules('share_percentage', 'share percentage', 'required');
+        $this->form_validation->set_rules('gender', 'Gender', 'required');        
+        $this->form_validation->set_rules('blood_group', 'Blood group', 'required');  
+        $this->form_validation->set_rules('marital_status', 'Marital status', 'required');  
+        $this->form_validation->set_rules('birth_date', 'Birth date ', 'required');           
+        $this->form_validation->set_rules('present_address', 'Present Address', 'required');
+        $this->form_validation->set_rules('permanent_address', 'Permanent Address', 'required');        
+        $this->form_validation->set_rules('nationality', 'Nationality', 'required');
+        $this->form_validation->set_rules('nid_no', 'NID', 'required');
+        $this->form_validation->set_rules('birth_reg_no', 'Birth reg no', 'required');
+        $this->form_validation->set_rules('passport_no', 'Passport', 'required');        
+        $this->form_validation->set_rules('religion', 'religion', 'required');
+        $this->form_validation->set_rules('educational_qualification', 'Education', 'required');
+        $this->form_validation->set_rules('organization', 'Organization', 'required');
+        $this->form_validation->set_rules('designation', 'Designation', 'required');        
+        $this->form_validation->set_rules('office_address', 'Office Address', 'required'); 
+        $this->form_validation->set_rules('contact_no', 'Contact no', 'required');        
+        $this->form_validation->set_rules('email', 'Email', 'required');
+        
+        //if ($this->form_validation->run() === FALSE)
+        if ($this->form_validation->run() === FALSE||($error))
+        {
+            $this->load->view('templates/header');
+            $this->load->view('templates/menu');
+            $this->load->view('nominee/edit', $data);
+            $this->load->view('templates/footer');
+ 
+        }
+        else
+        {
+            $nominee_id=$this->nominee_model->set_nominee($id,$image_name);   
+            redirect('person/view/'.$personal_id);
+
+        }
+    }
+    public function update_poa($id = NULL){
+        $id= base64_decode($id);
+        $data['nominee_id'] = $id;
+        $data['nominee_poa_item'] = $this->nominee_model->get_nomineess_poa_history($id); 
+        $data['pension_item']  = $this->pension_model->get_pension_by_nominee_id($id);
+        $data['fis'] = $this->fi_model->get_fis();
+        $data['branches'] = $this->branch_model->get_branches();   
+        $data['title_poa_history'] = 'Nominees Proof of alive history'; 
+        $data['nominee_item'] = $this->nominee_model->get_nominees($id);  
+        $data['errormessage']="";
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        
+        if(isset($_POST) && !empty($_FILES['poa_file']['name'])){
+		$name = $_FILES['poa_file']['name'];
+		list($txt, $ext) = explode(".", $name);
+		$poa_file_name = time().".".$ext;
+		$tmp = $_FILES['poa_file']['tmp_name'];
+		if(move_uploaded_file($tmp, 'upload/proof_of_alive/'.$poa_file_name)){
+                    echo "POA uploading success";
+		}else{
+			echo "POA uploading failed";
+                        $data['errormessage']="File uploading failed";
+		}
+	}
+        
+
+        $this->form_validation->set_rules('proof_of_alive_validity', 'Proof of alive validity', 'required');       
+       // $this->form_validation->set_rules('remarks', 'Remarks', 'required');
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();    
+        
+        if ($this->form_validation->run() === FALSE)
+        {
+            $this->load->view('templates/header');
+            $this->load->view('templates/menu');
+            $this->load->view('nominee/poa_update_view', $data);
+            $this->load->view('templates/footer');            
+ 
+        }
+        else
+        {
+        $this->nominee_model->update_nominee_poa($id,$poa_file_name);
+        $this->session->set_flashdata('confirmation',"Update successful");
+      //  redirect( base_url() . 'index.php/nominee');  
+        redirect( base_url() . 'nominee/expired_nominee_list');
+        }
+    }    
+    public function update_nmc($id = NULL){
+        $id= base64_decode($id);
+        $data['nominee_id'] = $id;
+        $data['nominee_nmc_item'] = $this->nominee_model->get_nomineess_nmc_history($id); 
+        $data['pension_item']  = $this->pension_model->get_pension_by_nominee_id($id);
+        $data['fis'] = $this->fi_model->get_fis();
+        $data['branches'] = $this->branch_model->get_branches();   
+        $data['title_nmc_history'] = 'Nominees non marriage certificate history'; 
+        $data['nominee_item'] = $this->nominee_model->get_nominees($id);  
+        $data['errormessage']="";
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        
+        if(isset($_POST) && !empty($_FILES['nmc_file']['name'])){
+		$name = $_FILES['nmc_file']['name'];
+		list($txt, $ext) = explode(".", $name);
+		$nmc_file_name = time().".".$ext;
+		$tmp = $_FILES['nmc_file']['tmp_name'];
+		if(move_uploaded_file($tmp, 'upload/non_marriage_certificate/'.$nmc_file_name)){
+                    echo "NMC uploading success";
+		}else{
+			echo "NMC uploading failed";
+                        $data['errormessage']="File uploading failed";
+		}
+	}
+        
+
+        $this->form_validation->set_rules('non_marriage_cert_validity', 'Certificate validity', 'required');       
+        //$this->form_validation->set_rules('remarks', 'Remarks', 'required');
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();    
+        //$data['title'] = $data['employee_item']['full_name']; 
+        
+        if ($this->form_validation->run() === FALSE)
+        {
+            $this->load->view('templates/header');
+            $this->load->view('templates/menu');
+            $this->load->view('nominee/nmc_update_view', $data);
+            $this->load->view('templates/footer');            
+ 
+        }
+        else
+        {
+        $this->nominee_model->update_nominee_nmc($id,$nmc_file_name);
+        $this->session->set_flashdata('confirmation',"Update successful");
+       // redirect( base_url() . 'index.php/nominee');  
+        redirect( base_url() . 'nominee/expired_nominee_nmc_list'); 
+        }
+    }    
+    public function expired_nominee_list(){
+        $last_day_this_month  = date('Y-m-t');
+        $first_day_this_month = date('Y-m-01');       
+        $data['nominees']  = $this->nominee_model->get_nominees_expired_poa($first_day_this_month,$last_day_this_month);
+        //var_dump($data);
+        $this_month  = date('M-Y');
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();
+        $data['title'] = 'List of expired proof of alive of: '.$this_month; 
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('nominee/nominee_expired_list', $data);
+        $this->load->view('templates/footer');
+    }    
+    public function expired_nominee_list_next(){            
+        $last_day_this_month  = date('Y-m-t');
+        $first_day_this_month = date('Y-m-01');
+        $first_day_next_month = date('Y-m-d', strtotime ( '+1 month' , strtotime ( $first_day_this_month )) ) ;  
+        $last_day_next_month = date("Y-m-t", strtotime($first_day_next_month));      
+        $data['nominees']  = $this->nominee_model->get_nominees_expired_poa($first_day_next_month,$last_day_next_month);       
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();
+        $data['title'] = 'List of expired proof of alive of:'.$first_day_next_month." to ".$last_day_next_month; 
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('nominee/nominee_expired_list', $data);
+        $this->load->view('templates/footer');
+    } 
+    public function expired_nominee_nmc_list(){
+        $last_day_this_month  = date('Y-m-t');
+        $first_day_this_month = date('Y-m-01');       
+        $data['nominees']  = $this->nominee_model->get_nominees_expired_nmc($first_day_this_month,$last_day_this_month);
+        //var_dump($data);
+        $this_month  = date('M-Y');
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();
+        $data['title'] = 'List of expired non marriage certificate of:'.$this_month; 
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('nominee/nominee_nmc', $data);
+        $this->load->view('templates/footer');
+    }
+    public function expired_nominee_nmc_list_next(){            
+        $last_day_this_month  = date('Y-m-t');
+        $first_day_this_month = date('Y-m-01');
+        $first_day_next_month = date('Y-m-d', strtotime ( '+1 month' , strtotime ( $first_day_this_month )) ) ;  
+        $last_day_next_month = date("Y-m-t", strtotime($first_day_next_month));      
+        $data['nominees']  = $this->nominee_model->get_nominees_expired_nmc($first_day_next_month,$last_day_next_month);       
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();
+        $data['title'] = 'List of expired proof of alive non marriage certificate of:'.$first_day_next_month." to ".$last_day_next_month; 
+        $this->load->view('templates/header');
+        $this->load->view('templates/menu');
+        $this->load->view('nominee/nominee_nmc', $data);
+        $this->load->view('templates/footer');
+    }
+    
+    
+    public function stop_payment_status($id = NULL){
+        
+        $nominee_id = $id;        
+        $id= base64_decode($id);      
+        $data['nominee_id'] = $id;
+        $data['title_payment_history'] = 'Nominee Payment Status'; 
+        $data['nominee_item']  = $this->nominee_model->get_nominees($id);  
+        $data['branches'] = $this->branch_model->get_branches();    
+      //  var_dump($data['nominee_item']);
+        
+        if (empty($data['nominee_item']))
+        {
+            show_404();
+        }
+        $data['errormessage']="";
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('effective_date_of_stop_payment', 'Effective Date of stop payment', 'required');       
+        $this->form_validation->set_rules('reason', 'Reason', 'required');
+        $data['designations'] = $this->designation_model->get_designations();      
+        $data['title'] = $data['nominee_item']['full_name']; 
+        
+        if ($this->form_validation->run() === FALSE)
+        {
+            $this->load->view('templates/header');
+            $this->load->view('templates/menu');
+            $this->load->view('nominee/payment_stop_view', $data);
+            $this->load->view('templates/footer');            
+ 
+        }
+        else
+        {
+        $this->nominee_model->update_nominee_payment_stop($id);
+        $this->session->set_flashdata('confirmation',"Payment has been stopped!");
+        redirect( base_url() . 'nominee/view/'.$nominee_id); 
+        }
+        
+
+        
+    }
+    public function restart_payment_status($id = NULL){
+        $nominee_id = $id; 
+        $id= base64_decode($id);    
+        $data['nominee_id'] = $id;
+        $data['title_payment_history'] = 'Nominee Payment Status'; 
+        $data['nominee_item']  = $this->nominee_model->get_nominees($id);  
+        if (empty($data['nominee_item']))
+        {
+            show_404();
+        }
+        $data['errormessage']="";
+        $this->load->helper('form');
+        $this->load->library('form_validation'); 
+        $this->form_validation->set_rules('reason', 'Reason', 'required');
+        $data['designations'] = $this->designation_model->get_designations();
+        $data['branches'] = $this->branch_model->get_branches();    
+        $data['title'] = $data['nominee_item']['full_name']; 
+        
+        if ($this->form_validation->run() === FALSE)
+        {
+            $this->load->view('templates/header');
+            $this->load->view('templates/menu');
+            $this->load->view('nominee/payment_restart_view', $data);
+            $this->load->view('templates/footer');            
+ 
+        }
+        else
+        {
+        $this->nominee_model->update_nominee_payment_restart($id);
+        $this->session->set_flashdata('confirmation',"Payment has been stopped!");
+        redirect( base_url() . 'employee'); 
+        }
+        
+
+        
+    }
+    
+    public function delete()
+    {
+        $id = $this->uri->segment(3);
+        $id = base64_decode($id);
+        if (empty($id))
+        {
+            show_404();
+        }
+                
+        $nominee_item = $this->nominee_model->get_nominee_by_id($id);
+        
+        $this->nominee_model->delete_nominee($id);        
+        redirect( base_url() . 'index.php/nominee');        
+    }
+}
